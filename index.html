@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Telegram Gifts Crash</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+  --bg: #0a0818;
+  --card: #1a152e;
+  --accent: #8a2aff;
+  --accent-light: #a355ff;
+  --accent-glow: 0 0 15px rgba(138, 42, 255, 0.7);
+  --success: #00e676;
+  --danger: #ff4d67;
+  --text: #ffffff;
+  --text-muted: #9aa6c0;
+  --radius: 16px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Rajdhani', sans-serif;
+  background: radial-gradient(ellipse at top, var(--bg), #0d0a1f);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: 80px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: rgba(10, 8, 24, 0.9);
+  border-bottom: 1px solid rgba(138, 42, 255, 0.2);
+  position: relative;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chip {
+  padding: 8px 16px;
+  border-radius: 50px;
+  background: rgba(138, 42, 255, 0.15);
+  font-weight: 700;
+  font-size: 14px;
+  border: 1px solid rgba(138, 42, 255, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.deposit-button {
+  padding: 8px 16px;
+  border-radius: 50px;
+  background: linear-gradient(180deg, var(--success), #00a152);
+  font-weight: 700;
+  font-size: 14px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.2s;
+}
+
+.deposit-button:hover {
+  transform: scale(1.05);
+}
+
+.graph-container {
+  position: relative;
+  margin: 20px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: linear-gradient(145deg, rgba(26, 21, 46, 0.8), rgba(20, 16, 36, 0.9));
+  border: 1px solid rgba(138, 42, 255, 0.25);
+  height: 300px;
+}
+
+.graph {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.grid-lines {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(138, 42, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(138, 42, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0.3;
+}
+
+.mult-display {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--accent);
+  z-index: 10;
+  text-shadow: var(--accent-glow);
+  font-family: 'Orbitron', sans-serif;
+  background: rgba(26, 21, 46, 0.8);
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(138, 42, 255, 0.3);
+}
+
+.mult-display.crash {
+  color: var(--danger);
+  animation: pulse-danger 0.5s infinite alternate;
+}
+
+@keyframes pulse-danger {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.05); }
+}
+
+.countdown {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(26, 21, 46, 0.95);
+  padding: 12px 24px;
+  border-radius: 16px;
+  font-size: 48px;
+  font-weight: 900;
+  z-index: 15;
+  border: 2px solid rgba(138, 42, 255, 0.4);
+  font-family: 'Orbitron', sans-serif;
+  animation: count-pulse 1.5s infinite alternate;
+}
+
+@keyframes count-pulse {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  100% { transform: translate(-50%, -50%) scale(1.05); }
+}
+
+.rocket-container {
+  position: absolute;
+  left: 20px;
+  bottom: 15px;
+  z-index: 10;
+  transition: transform 0.1s linear;
+}
+
+.rocket {
+  font-size: 40px;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
+  transform-origin: center bottom;
+}
+
+.trail {
+  position: absolute;
+  width: 50px;
+  height: 20px;
+  background: radial-gradient(ellipse, rgba(255, 180, 70, 0.9) 0%, rgba(255, 100, 50, 0.5) 40%, transparent 70%);
+  filter: blur(6px);
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.2s;
+  left: 32px;
+  bottom: 8px;
+}
+
+.progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--danger));
+  width: 0%;
+  transition: width 1s linear;
+  z-index: 5;
+}
+
+.bet-section {
+  padding: 0 20px 20px;
+}
+
+.bet-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  border: 1px solid rgba(138, 42, 255, 0.2);
+}
+
+.bet-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.bet-input {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(138, 42, 255, 0.3);
+  background: rgba(27, 17, 48, 0.6);
+  font-weight: 700;
+  color: white;
+  font-family: inherit;
+  font-size: 16px;
+}
+
+.bet-button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(180deg, var(--accent), #6a1aff);
+  font-weight: 800;
+  cursor: pointer;
+  color: white;
+  font-family: inherit;
+  font-size: 16px;
+  transition: transform 0.2s;
+}
+
+.bet-button.cashout {
+  background: linear-gradient(180deg, var(--success), #00a152);
+}
+
+.bet-button:disabled {
+  background: #3a3550;
+  color: #6b6680;
+  cursor: not-allowed;
+}
+
+.quick-bets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.quick-bet {
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(138, 42, 255, 0.1);
+  border: 1px solid rgba(138, 42, 255, 0.2);
+  text-align: center;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 70px;
+  background: rgba(15, 10, 30, 0.95);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top: 1px solid rgba(138, 42, 255, 0.25);
+  z-index: 100;
+}
+
+.tab {
+  color: var(--text-muted);
+  font-weight: 700;
+  padding: 10px 16px;
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.tab.active {
+  background: rgba(138, 42, 255, 0.15);
+  color: var(--accent-light);
+}
+
+.tab i {
+  font-size: 18px;
+}
+
+/* Модальные окна */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.gift-modal, .deposit-modal {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 30px rgba(138, 42, 255, 0.5);
+  text-align: center;
+}
+
+.gift-modal h2, .deposit-modal h2 {
+  margin-bottom: 20px;
+  color: var(--accent-light);
+}
+
+.gift-slots, .deposit-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.gift-slot, .deposit-option {
+  background: rgba(138, 42, 255, 0.1);
+  border: 2px solid rgba(138, 42, 255, 0.3);
+  border-radius: 12px;
+  padding: 20px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.gift-slot:hover, .deposit-option:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent);
+  box-shadow: 0 5px 15px rgba(138, 42, 255, 0.3);
+}
+
+.gift-slot.selected, .deposit-option.selected {
+  background: rgba(138, 42, 255, 0.2);
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(138, 42, 255, 0.5);
+}
+
+.gift-icon, .deposit-icon {
+  font-size: 32px;
+  color: var(--accent-light);
+}
+
+.gift-value, .deposit-value {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.deposit-price {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.confirm-button {
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(180deg, var(--accent), #6a1aff);
+  font-weight: 800;
+  cursor: pointer;
+  color: white;
+  font-family: inherit;
+  font-size: 16px;
+  width: 100%;
+}
+
+.confirm-button:disabled {
+  background: #3a3550;
+  color: #6b6680;
+  cursor: not-allowed;
+}
+
+.balance-info {
+  margin-top: 15px;
+  padding: 10px;
+  background: rgba(138, 42, 255, 0.1);
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.balance-info i {
+  color: var(--accent-light);
+  margin-right: 5px;
+}
+
+.stars-info {
+  margin-top: 10px;
+  padding: 8px;
+  background: rgba(255, 204, 0, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 204, 0, 0.3);
+  font-size: 14px;
+}
+
+.stars-info i {
+  color: gold;
+  margin-right: 5px;
+}
+
+@media (max-width: 400px) {
+  .graph-container {
+    height: 250px;
+    margin: 15px;
+  }
+  
+  .countdown {
+    font-size: 36px;
+  }
+  
+  .mult-display {
+    font-size: 26px;
+  }
+  
+  .gift-slots, .deposit-options {
+    gap: 10px;
+  }
+  
+  .gift-icon, .deposit-icon {
+    font-size: 24px;
+  }
+  
+  .deposit-button {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="chip" id="status"><i class="fas fa-clock"></i> Ожидание</div>
+    <div class="topbar-right">
+      <div class="chip"><i class="fas fa-clock"></i> <span id="now">00:00</span></div>
+      <button class="deposit-button" id="depositButton">
+        <i class="fas fa-plus"></i> Пополнить
+      </button>
+    </div>
+  </div>
+
+  <div class="graph-container">
+    <div class="graph" id="graph">
+      <div class="grid-lines"></div>
+      <div class="mult-display" id="mult">1.00x</div>
+      <div class="countdown" id="count">5</div>
+      
+      <div class="rocket-container" id="rocket-container">
+        <div class="rocket" id="rocket">🚀</div>
+        <div class="trail" id="trail"></div>
+      </div>
+      
+      <div class="progress-bar" id="progress"></div>
+    </div>
+  </div>
+
+  <div class="bet-section">
+    <div class="bet-card">
+      <div class="bet-controls">
+        <button id="betButton" class="bet-button">Поставить</button>
+      </div>
+      <div class="balance-info">
+        <i class="fas fa-coins"></i> Баланс: <span id="balance">1000</span> монет
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно выбора подарка -->
+  <div class="modal-overlay" id="giftModal">
+    <div class="gift-modal">
+      <h2>Выберите подарок</h2>
+      <div class="gift-slots">
+        <div class="gift-slot" data-value="10">
+          <div class="gift-icon">🎁</div>
+          <div class="gift-value">10 монет</div>
+        </div>
+        <div class="gift-slot" data-value="50">
+          <div class="gift-icon">🎁</div>
+          <div class="gift-value">50 монет</div>
+        </div>
+        <div class="gift-slot" data-value="100">
+          <div class="gift-icon">🎁</div>
+          <div class="gift-value">100 монет</div>
+        </div>
+      </div>
+      <div class="balance-info">
+        <i class="fas fa-coins"></i> Доступно: <span id="modalBalance">1000</span> монет
+      </div>
+      <button id="confirmGift" class="confirm-button" disabled>Подтвердить</button>
+    </div>
+  </div>
+
+  <!-- Модальное окно пополнения баланса -->
+  <div class="modal-overlay" id="depositModal">
+    <div class="deposit-modal">
+      <h2>Пополнение баланса</h2>
+      <div class="stars-info">
+        <i class="fas fa-star"></i> Оплата через Telegram Stars
+      </div>
+      <div class="deposit-options">
+        <div class="deposit-option" data-stars="5" data-coins="100">
+          <div class="deposit-icon">⭐</div>
+          <div class="deposit-value">100 монет</div>
+          <div class="deposit-price">5 звёзд</div>
+        </div>
+        <div class="deposit-option" data-stars="20" data-coins="500">
+          <div class="deposit-icon">⭐⭐</div>
+          <div class="deposit-value">500 монет</div>
+          <div class="deposit-price">20 звёзд</div>
+        </div>
+        <div class="deposit-option" data-stars="50" data-coins="1500">
+          <div class="deposit-icon">⭐⭐⭐</div>
+          <div class="deposit-value">1500 монет</div>
+          <div class="deposit-price">50 звёзд</div>
+        </div>
+      </div>
+      <button id="confirmDeposit" class="confirm-button" disabled>Оплатить</button>
+    </div>
+  </div>
+</div>
+
+<nav class="tabbar">
+  <div class="tab"><i class="fas fa-gift"></i><span>Кейсы</span></div>
+  <div class="tab active"><i class="fas fa-rocket"></i><span>Краш</span></div>
+  <div class="tab"><i class="fas fa-user"></i><span>Профиль</span></div>
+</nav>
+
+<script>
+// Константы и переменные состояния
+const KEY = 'tg_gifts_db';
+const state = JSON.parse(localStorage.getItem(KEY) || 'null') || {
+  balance: 1000,
+  history: []
+};
+
+// DOM элементы
+const elements = {
+  now: document.getElementById('now'),
+  status: document.getElementById('status'),
+  mult: document.getElementById('mult'),
+  rocket: document.getElementById('rocket'),
+  rocketContainer: document.getElementById('rocket-container'),
+  trail: document.getElementById('trail'),
+  count: document.getElementById('count'),
+  balance: document.getElementById('balance'),
+  modalBalance: document.getElementById('modalBalance'),
+  progress: document.getElementById('progress'),
+  betButton: document.getElementById('betButton'),
+  giftModal: document.getElementById('giftModal'),
+  confirmGift: document.getElementById('confirmGift'),
+  giftSlots: document.querySelectorAll('.gift-slot'),
+  depositButton: document.getElementById('depositButton'),
+  depositModal: document.getElementById('depositModal'),
+  depositOptions: document.querySelectorAll('.deposit-option'),
+  confirmDeposit: document.getElementById('confirmDeposit')
+};
+
+// Переменные игры
+let running = false;
+let multiplier = 1;
+let flightInterval;
+let targetMultiplier = 1;
+let currentBet = null;
+let countdownInterval;
+let canBet = true;
+let selectedGiftValue = 0;
+let cashoutPerformed = false;
+let selectedDepositOption = null;
+
+// Сохранение состояния
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(state));
+  updateBalance();
+}
+
+// Обновление баланса
+function updateBalance() {
+  elements.balance.textContent = state.balance;
+  elements.modalBalance.textContent = state.balance;
+}
+
+// Обновление времени
+function updateTime() {
+  const d = new Date();
+  elements.now.textContent = 
+    d.getHours().toString().padStart(2, '0') + ':' + 
+    d.getMinutes().toString().padStart(2, '0');
+}
+
+// Генерация случайного целевого множителя
+function getRandomTarget() {
+  return +(Math.random() * (15 - 1) + 1).toFixed(2);
+}
+
+// Запуск обратного отсчета
+function startCountdown() {
+  if (running) return;
+  
+  elements.status.innerHTML = '<i class="fas fa-clock"></i> Ожидание';
+  elements.count.style.display = 'block';
+  elements.count.textContent = 5;
+  
+  let count = 5;
+  canBet = true; // Разрешаем делать ставки во время обратного отсчета
+  cashoutPerformed = false;
+  
+  elements.rocket.textContent = '🚀';
+  elements.rocketContainer.style.transform = 'translate(0, 0) rotate(0deg)';
+  elements.trail.style.opacity = '0';
+  elements.progress.style.width = '0%';
+  
+  // Обновляем состояние кнопки
+  updateBetButton();
+  
+  countdownInterval = setInterval(() => {
+    count--;
+    elements.count.textContent = count;
+    elements.progress.style.width = `${(5 - count) * 20}%`;
+    
+    if (count <= 0) {
+      clearInterval(countdownInterval);
+      elements.count.style.display = 'none';
+      startFlight();
+    }
+  }, 1000);
+}
+
+// Запуск полета ракеты
+function startFlight() {
+  elements.status.innerHTML = '<i class="fas fa-rocket"></i> Идёт раунд';
+  running = true;
+  multiplier = 1;
+  elements.mult.textContent = '1.00x';
+  canBet = false; // Запрещаем делать ставки во время полета
+  
+  targetMultiplier = getRandomTarget();
+  
+  // Обновляем состояние кнопки
+  updateBetButton();
+  
+  flightInterval = setInterval(updateFlight, 90);
+}
+
+// Обновление полета
+function updateFlight() {
+  multiplier += 0.02;
+  elements.mult.textContent = multiplier.toFixed(2) + 'x';
+  
+  const x = Math.min(380, 6 * (multiplier - 1) * 8);
+  const y = Math.min(220, 4 * (multiplier - 1) * 8);
+  
+  elements.rocketContainer.style.transform = `translate(${x}px, -${y}px) rotate(-${10 + (multiplier * 0.5)}deg)`;
+  elements.trail.style.left = (x + 22) + 'px';
+  elements.trail.style.bottom = (15 - y) + 'px';
+  elements.trail.style.opacity = multiplier > 1.1 ? '1' : '0';
+  
+  elements.progress.style.width = `${Math.min(100, (multiplier / targetMultiplier) * 100)}%`;
+  
+  if (multiplier >= targetMultiplier) {
+    endFlight();
+  }
+}
+
+// Завершение полета
+function endFlight() {
+  clearInterval(flightInterval);
+  running = false;
+  
+  elements.status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Краш';
+  elements.mult.classList.add('crash');
+  elements.rocket.textContent = '💥';
+  elements.trail.style.opacity = '0';
+  
+  if (currentBet && !cashoutPerformed) {
+    // Если игрок не забрал выигрыш до краха
+    currentBet = null;
+    updateBetButton();
+  }
+  
+  state.history.push({
+    mult: targetMultiplier.toFixed(2),
+    time: new Date().toISOString()
+  });
+  
+  if (state.history.length > 50) state.history.shift();
+  
+  save();
+  
+  setTimeout(() => {
+    elements.mult.classList.remove('crash');
+    startCountdown();
+  }, 2000);
+}
+
+// Забрать выигрыш
+function cashout() {
+  if (!currentBet || !running || cashoutPerformed) return;
+  
+  const winAmount = Math.floor(currentBet.amount * multiplier);
+  state.balance += winAmount;
+  save();
+  
+  // Подсветка кнопки зеленым при успешном взятии выигрыша
+  elements.betButton.style.background = 'linear-gradient(180deg, var(--success), #00a152)';
+  setTimeout(() => {
+    elements.betButton.style.background = '';
+  }, 1000);
+  
+  // Сбрасываем текущую ставку, но оставляем ракету лететь
+  currentBet = null;
+  cashoutPerformed = true;
+  
+  // Делаем кнопку неактивной после взятия выигрыша
+  elements.betButton.disabled = true;
+  elements.betButton.textContent = 'Поставить';
+  elements.betButton.classList.remove('cashout');
+}
+
+// Обновление кнопки ставки
+function updateBetButton() {
+  if (currentBet && running) {
+    elements.betButton.textContent = 'Забрать';
+    elements.betButton.classList.add('cashout');
+    elements.betButton.disabled = false;
+  } else if (canBet) {
+    elements.betButton.textContent = 'Поставить';
+    elements.betButton.classList.remove('cashout');
+    elements.betButton.disabled = false;
+  } else {
+    elements.betButton.textContent = 'Поставить';
+    elements.betButton.classList.remove('cashout');
+    elements.betButton.disabled = true; // Делаем кнопку серой и неактивной
+  }
+}
+
+// Открытие модального окна выбора подарка
+function openGiftModal() {
+  if (!canBet) return;
+  
+  // Сброс выбора
+  elements.giftSlots.forEach(slot => slot.classList.remove('selected'));
+  elements.confirmGift.disabled = true;
+  selectedGiftValue = 0;
+  
+  // Обновляем баланс в модальном окне
+  updateBalance();
+  
+  // Показ модального окна
+  elements.giftModal.classList.add('active');
+}
+
+// Открытие модального окна пополнения
+function openDepositModal() {
+  // Сброс выбора
+  elements.depositOptions.forEach(option => option.classList.remove('selected'));
+  elements.confirmDeposit.disabled = true;
+  selectedDepositOption = null;
+  
+  // Показ модального окна
+  elements.depositModal.classList.add('active');
+}
+
+// Функция оплаты через Telegram Stars
+function processStarsPayment(starsAmount, coinsAmount) {
+  // В реальном приложении здесь будет вызов Telegram Mini Apps API
+  console.log(`Оплата ${starsAmount} звёзд за ${coinsAmount} монет`);
+  
+  // Эмуляция успешной оплаты
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // В реальном приложении здесь будет проверка успешности оплаты
+      const success = true;
+      resolve(success);
+    }, 1500);
+  });
+}
+
+// Обработчик кнопки ставки
+elements.betButton.addEventListener('click', () => {
+  if (currentBet && running) {
+    cashout();
+    return;
+  }
+  
+  if (!canBet) return;
+  
+  openGiftModal();
+});
+
+// Обработчик кнопки пополнения
+elements.depositButton.addEventListener('click', openDepositModal);
+
+// Обработчик выбора подарка
+elements.giftSlots.forEach(slot => {
+  slot.addEventListener('click', () => {
+    // Снимаем выделение со всех слотов
+    elements.giftSlots.forEach(s => s.classList.remove('selected'));
+    
+    // Выделяем выбранный слот
+    slot.classList.add('selected');
+    
+    // Сохраняем значение выбранного подарка
+    selectedGiftValue = parseInt(slot.dataset.value);
+    
+    // Активируем кнопку подтверждения
+    elements.confirmGift.disabled = false;
+  });
+});
+
+// Обработчик выбора варианта пополнения
+elements.depositOptions.forEach(option => {
+  option.addEventListener('click', () => {
+    // Снимаем выделение со всех вариантов
+    elements.depositOptions.forEach(o => o.classList.remove('selected'));
+    
+    // Выделяем выбранный вариант
+    option.classList.add('selected');
+    
+    // Сохраняем выбранный вариант
+    selectedDepositOption = {
+      stars: parseInt(option.dataset.stars),
+      coins: parseInt(option.dataset.coins)
+    };
+    
+    // Активируем кнопку оплаты
+    elements.confirmDeposit.disabled = false;
+  });
+});
+
+// Обработчик подтверждения выбора подарка
+elements.confirmGift.addEventListener('click', () => {
+  if (selectedGiftValue <= 0) return;
+  
+  if (selectedGiftValue > state.balance) {
+    alert('Недостаточно средств!');
+    return;
+  }
+  
+  // Делаем ставку
+  currentBet = { amount: selectedGiftValue };
+  state.balance -= selectedGiftValue;
+  save();
+  updateBetButton();
+  
+  // Закрываем модальное окно
+  elements.giftModal.classList.remove('active');
+});
+
+// Обработчик подтверждения оплаты
+elements.confirmDeposit.addEventListener('click', async () => {
+  if (!selectedDepositOption) return;
+  
+  // Показываем индикатор загрузки
+  elements.confirmDeposit.disabled = true;
+  elements.confirmDeposit.textContent = 'Обработка...';
+  
+  try {
+    // Обрабатываем оплату через Telegram Stars
+    const paymentSuccess = await processStarsPayment(
+      selectedDepositOption.stars,
+      selectedDepositOption.coins
+    );
+    
+    if (paymentSuccess) {
+      // Пополняем баланс
+      state.balance += selectedDepositOption.coins;
+      save();
+      updateBalance();
+      
+      // Показываем сообщение об успехе
+      alert(`✅ Успешно! Баланс пополнен на ${selectedDepositOption.coins} монет`);
+      
+      // Закрываем модальное окно
+      elements.depositModal.classList.remove('active');
+    } else {
+      alert('❌ Ошибка оплаты. Попробуйте снова.');
+    }
+  } catch (error) {
+    console.error('Ошибка оплаты:', error);
+    alert('❌ Произошла ошибка при обработке платежа');
+  } finally {
+    // Восстанавливаем кнопку
+    elements.confirmDeposit.disabled = false;
+    elements.confirmDeposit.textContent = 'Оплатить';
+  }
+});
+
+// Закрытие модальных окон при клике вне их области
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.remove('active');
+    }
+  });
+});
+
+// Инициализация
+setInterval(updateTime, 1000);
+updateTime();
+startCountdown();
+updateBalance();
+</script>
+</body>
+</html>
